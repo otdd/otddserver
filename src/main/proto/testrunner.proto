@@ -1,0 +1,61 @@
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.otdd.otddserver";
+option java_outer_classname = "TestRunnerProto";
+
+import "google/protobuf/empty.proto";
+package testrunner;
+
+service TestRunnerService{
+	rpc FetchTestCase (FetchTestCaseReq) returns (TestCase) {}
+	rpc FetchOutboundResp (FetchOutboundRespReq) returns (FetchOutboundRespResp) {}
+	rpc ReportTestResult (TestResult) returns (ReportTestResultResp) {}
+	rpc Log (LogReq) returns (google.protobuf.Empty) {}
+}
+
+message FetchTestCaseReq {
+	string username = 1;
+	string tag = 2;
+	string mac = 3;
+}
+
+message TestCase {
+	string testId = 1;
+	string runId = 2;
+	int32 port = 3;
+	int32 mockOutboundConnections = 4;
+	repeated string passthroughConnections = 5;
+	bytes inboundRequest = 6;
+}
+
+message FetchOutboundRespReq {
+	string testId = 1;
+	string runId = 2;
+	bytes outboundReq = 3;
+}
+
+message FetchOutboundRespResp{
+	bytes outboundResp = 1;
+}
+
+message TestResult{
+        string testId = 1;
+        string runId = 2;
+        string inboundRequestErr = 3;
+        bytes inboundResponse = 4;
+        string inboundResponseErr = 5;
+}
+
+message ReportTestResultResp{
+	bool result = 1;
+}
+
+message LogReq {
+	string runId = 1;
+	string testId = 2;
+	string log = 3;
+	int64 timestamp = 4;
+	string level = 5;
+}
