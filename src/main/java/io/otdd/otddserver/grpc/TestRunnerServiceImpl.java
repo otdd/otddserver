@@ -93,6 +93,28 @@ public class TestRunnerServiceImpl extends TestRunnerServiceGrpc.TestRunnerServi
             outboundCallResult.setReqBytes(request.getOutboundReq().toByteArray());
             outboundCallResult.setReqTime(new Date());
 
+            // it's for greeting msg.
+            // e.g. the mysql client connects and send nothing first but waits for the mysql server's greeting msg.
+            if(request.getOutboundReq()==null||request.getOutboundReq().size()==0){
+                int index = 0;
+                for(OutboundCallBase outboundCall:test.getOutboundCalls()){
+                    if(outboundCall.getReqBytes()==null||outboundCall.getReqBytes().length==0){
+
+                        FetchOutboundRespResp resp = FetchOutboundRespResp.newBuilder().setOutboundResp(ByteString.copyFrom(outboundCall.getRespBytes()))
+                                .build();
+                        responseObserver.onNext(resp);
+                        responseObserver.onCompleted();
+
+                        outboundCallResult.setMatchedPeerIndex(index);
+                        outboundCallResult.setRespBytes(outboundCall.getRespBytes());
+                        outboundCallResult.setRespTime(new Date());
+                        outboundCallResult.setType(OutboundCallType.CONNECT_AND_RECEIVE_GREETING);
+                        result.getOutboundCallResults().add(outboundCallResult);
+                        return;
+                    }
+                    index++;
+                }
+            }
             MatchResult matchResult = matchService.getMostMatchedIndex(test,request.getOutboundReq().toByteArray());
             if(matchResult!=null&&matchResult.getMatchedIndex()>=0){
                 OutboundCallBase matchedCall = test.getOutboundCalls().get(matchResult.getMatchedIndex());
