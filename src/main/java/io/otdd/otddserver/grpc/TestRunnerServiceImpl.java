@@ -92,6 +92,7 @@ public class TestRunnerServiceImpl extends TestRunnerServiceGrpc.TestRunnerServi
             OutboundCallResult outboundCallResult = new OutboundCallResult();
             outboundCallResult.setReqBytes(request.getOutboundReq().toByteArray());
             outboundCallResult.setReqTime(new Date());
+            result.getOutboundCallResults().add(outboundCallResult);
 
             // it's for greeting msg.
             // e.g. the mysql client connects and send nothing first but waits for the mysql server's greeting msg.
@@ -109,7 +110,6 @@ public class TestRunnerServiceImpl extends TestRunnerServiceGrpc.TestRunnerServi
                         outboundCallResult.setRespBytes(outboundCall.getRespBytes());
                         outboundCallResult.setRespTime(new Date());
                         outboundCallResult.setType(OutboundCallType.CONNECT_AND_RECEIVE_GREETING);
-                        result.getOutboundCallResults().add(outboundCallResult);
                         return;
                     }
                     index++;
@@ -127,14 +127,12 @@ public class TestRunnerServiceImpl extends TestRunnerServiceGrpc.TestRunnerServi
                 outboundCallResult.setRespBytes(matchedCall.getRespBytes());
                 outboundCallResult.setRespTime(new Date());
                 outboundCallResult.setType(OutboundCallType.REQUEST_AND_RESPONSE);
-                result.getOutboundCallResults().add(outboundCallResult);
                 return;
             }
             else{
                 outboundCallResult.setMatchedPeerIndex(-1);
                 outboundCallResult.setRespErr("no response is matched! so this connection is forcibly closed by otdd test runner.");
                 outboundCallResult.setType(OutboundCallType.REQUEST_AND_RESPONSE);
-                result.getOutboundCallResults().add(outboundCallResult);
             }
         }
         responseObserver.onNext(null);
